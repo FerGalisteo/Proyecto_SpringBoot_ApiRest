@@ -13,6 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,6 +32,7 @@ import com.dwes.security.entities.Oferta;
 import com.dwes.security.entities.Reserva;
 import com.dwes.security.entities.Usuario;
 import com.dwes.security.service.OfertaService;
+import com.dwes.security.service.UserService;
 import com.dwes.security.service.user.ReservaService;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -69,8 +72,11 @@ import jakarta.persistence.EntityNotFoundException;
 	    
 	    @Autowired
 	    private ReservaService reservaService;
+	    
+	    @Autowired
+	    private UserService userService;
 
-	    // Endpoint para obtener un listado de libros, accesible solo por ROLE_USER
+	    // Endpoint para obtener un listado de ofertas, accesible solo por ROLE_USER
 	    @GetMapping
 	    @PreAuthorize("hasRole('ROLE_USER') || hasRole('ROLE_ADMIN')")
 	    public ResponseEntity<Page<Oferta>> listarTodasLasOfertas(
@@ -86,17 +92,56 @@ import jakarta.persistence.EntityNotFoundException;
 	        return new ResponseEntity<>(ofertas, HttpStatus.OK);
 	    }
 	    
-	 // Leer un libro por ID
+	 // Leer una oferta por ID
 	    @GetMapping("/{id}")
 	    @PreAuthorize("hasRole('ROLE_USER') || hasRole('ROLE_ADMIN')")
 	    public Oferta getOfertaById(@PathVariable Long id) {
 	        return ofertaService.obtenerOfertaPorId(id);
 	    }
 
-	    // CRUD endpoints, accesibles solo por ROLE_ADMIN
-	    // Crear un nuevo libro
+	    
+	    // Crear una nueva oferta. Este es el último método que he intentado implementar.
+	    
+	    
+	    
+	   /* @PostMapping
+	    @PreAuthorize("hasRole('ROLE_USER')")
+	    public ResponseEntity<Void> crearOferta(@RequestBody Oferta oferta) {
+	        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+	        String username = userDetails.getUsername();
+
+	        ofertaService.guardarOferta(oferta, username);
+
+	        return new ResponseEntity<>(HttpStatus.CREATED);
+	    }*/
+	    
+	    
+	    
+	    //Método para crear una oferta con el usuario automaticamente. No funciona /demasiado engorroso
+	    
+	   /* 
 	    @PostMapping
-	    @PreAuthorize("hasRole('ROLE_ADMIN')")
+	    @PreAuthorize("hasRole('ROLE_USER') || hasROle('ROLE_ADMIN')")
+	    public ResponseEntity<Void> crearOferta(@RequestBody Oferta oferta) {
+	        // Obtén el nombre de usuario del usuario autenticado
+	        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+	        String username = userDetails.getUsername();
+
+	        // Asigna el usuario creador a la oferta
+	        Usuario usuarioCreador = userService.findByUsername(username);
+	        oferta.setUsuarioCreador(usuarioCreador);
+
+	        // Guarda la oferta
+	        ofertaService.crearOferta(oferta);
+
+	        return new ResponseEntity<>(HttpStatus.CREATED);
+	    }
+*/	    
+	    
+	    //-------------Método para crear una oferta-----------
+	    
+	   @PostMapping
+	    @PreAuthorize("hasRole('ROLE_USER') || hasRole('ROLE_ADMIN')")
 	    public Oferta createOferta(@RequestBody Oferta offer) {
 	        return ofertaService.agregarOferta(offer);
 	    }
@@ -108,13 +153,14 @@ import jakarta.persistence.EntityNotFoundException;
 	        return ofertaService.actualizarOferta(id, offerDetails);
 	    }
 
-	    // Eliminar un libro
-	    @DeleteMapping("/{id}")
+	    // Eliminar una oferta
+	   /* @DeleteMapping("/{id}")
 	    @PreAuthorize("hasRole('ROLE_ADMIN')")
 	    public void deleteOferta(@PathVariable Long id) {
 	        ofertaService.eliminarOferta(id);
-	    }
+	    }*/
 	    
+	    // CRUD endpoints, accesibles solo por ROLE_ADMIN
 	    /***
 	     * ############
 	     * #   Reservar Libro

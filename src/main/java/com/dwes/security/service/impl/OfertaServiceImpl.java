@@ -1,20 +1,30 @@
 package com.dwes.security.service.impl;
 
+import java.time.LocalDate;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.stereotype.Service;
 
+import com.dwes.security.entities.EstadoReserva;
 import com.dwes.security.entities.Libro;
+import com.dwes.security.entities.LugarDisponible;
 import com.dwes.security.entities.Oferta;
 import com.dwes.security.entities.Reserva;
 import com.dwes.security.entities.Usuario;
 import com.dwes.security.error.exception.LibroNotFoundException;
 import com.dwes.security.error.exception.OfertaNotFoundException;
+import com.dwes.security.error.exception.UserNotFoundException;
 import com.dwes.security.repository.OfertaRepository;
+import com.dwes.security.repository.UserRepository;
 import com.dwes.security.service.OfertaService;
 
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
-
+@Service
 public class OfertaServiceImpl implements OfertaService{
 	
 	@Autowired
@@ -25,6 +35,64 @@ public class OfertaServiceImpl implements OfertaService{
 		// TODO Auto-generated method stub
 		return ofertaRepository.save(oferta);
 	}
+	
+	@Autowired
+    private UserRepository usuarioRepositorio;
+	
+	
+	
+	
+	//Este crear Oferta es una alternativa pero demasiado engorroso para lo que queremos
+	 @Override
+	    @Transactional
+	    public Oferta crearOferta(Long ofertaId, String titulo, Long usuarioId, String descripcion, Double precio,  LocalDate fechaCreacion, LocalDate fechaComienzo, LugarDisponible lugar) {
+	    
+
+	    	
+		// Obtenemos la oferta por ID
+	        Oferta oferta1 = ofertaRepository.findById(ofertaId)
+	                .orElseThrow(() -> new IllegalArgumentException("Oferta no encontrada"));
+
+	        // Verificar si el usuario tiene permisos para crear la oferta.
+	        if (!puedeCrearOferta(usuarioId, oferta1)) {
+	            throw new AccessDeniedException("No tienes permisos para eliminar esta oferta");
+	        }
+
+	        // Verificar si el usuario existe
+	        Usuario usuario = usuarioRepositorio.findById(usuarioId)
+	                        .orElseThrow(() -> new UserNotFoundException("Usuario no encontrado"));
+
+	   	
+	        // Crear la nueva reserva
+	        Oferta oferta = new Oferta();
+	        oferta.setTitulo(titulo);;
+	        oferta.setUsuarioCreador(usuario);
+	        oferta.setDescripcion(descripcion);
+	        oferta.setFechaComienzo(fechaComienzo);
+	        oferta.setFechaCreacion(fechaCreacion);
+	        oferta.setLugar(lugar);
+
+	        // Guardar la reserva en la base de datos
+	        return ofertaRepository.save(oferta);
+	    }
+	 
+	 
+	 //Este método para guardar una oferta es como el de arriba pero más simplificado
+	 /*Fallo al asignar el usuario.
+	 public void guardarOferta(Oferta oferta, String username) {
+	        Optional<Usuario> usuarioCreador = usuarioRepositorio.findByEmail(username);
+	        oferta.setUsuarioCreador(usuarioCreador);
+	        ofertaRepository.save(oferta);
+	    }*/
+	 
+	 
+	 
+
+	private boolean puedeCrearOferta(Long usuarioId, Oferta oferta) {
+		// TODO Auto-generated method stub
+		return oferta.getUsuarioCreador().getId().equals(usuarioId);
+	}
+
 
 	@Override
 	public Page<Oferta> listarTodasLasOfertas(Pageable pageable) {
@@ -50,10 +118,30 @@ public class OfertaServiceImpl implements OfertaService{
 	}
 
 	@Override
-	public void eliminarOferta(Long id) {
+	public void eliminarOfertaAdmin(Long id) {
 		ofertaRepository.deleteById(id);
 		
 	}
+	
+	@Override
+	public void eliminarOferta(Long ofertaId, String username) {
+        // Obtenemos la oferta por ID
+        Oferta oferta = ofertaRepository.findById(ofertaId)
+                .orElseThrow(() -> new IllegalArgumentException("Oferta no encontrada"));
+
+        // Verificar si el usuario tiene permisos para eliminar la oferta.
+        if (!puedeEliminarOferta(username, oferta)) {
+            throw new AccessDeniedException("No tienes permisos para eliminar esta oferta");
+        }
+
+        // Lógica para eliminar la oferta
+        ofertaRepository.deleteById(ofertaId);
+    }
+
+    private boolean puedeEliminarOferta(String username, Oferta oferta) {
+        // Verifica si el usuario logueado coincide con el usuario que creó la oferta
+        return oferta.getUsuarioCreador().getUsername().equals(username);
+    }
 
 	@Override
 	public Page<Libro> listarOfertaPorUsuario(Long usuarioId, Pageable pageable) {
@@ -72,6 +160,14 @@ public class OfertaServiceImpl implements OfertaService{
 		// TODO Auto-generated method stub
 		
 	}
+
+
+	@Override
+	public void guardarOferta(Oferta oferta, String username) {
+		// TODO Auto-generated method stub
+		
+	}
+	
 
 	
 }
