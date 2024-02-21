@@ -77,7 +77,7 @@ import jakarta.persistence.EntityNotFoundException;
 	    private UserService userService;
 
 	    // Endpoint para obtener un listado de ofertas, accesible solo por ROLE_USER
-	    @GetMapping
+	    @GetMapping("/listar")
 	    @PreAuthorize("hasRole('ROLE_USER') || hasRole('ROLE_ADMIN')")
 	    public ResponseEntity<Page<Oferta>> listarTodasLasOfertas(
 	            @RequestParam(defaultValue = "0") int page,
@@ -93,27 +93,53 @@ import jakarta.persistence.EntityNotFoundException;
 	    }
 	    
 	 // Leer una oferta por ID
-	    @GetMapping("/{id}")
+	    @GetMapping("/listar/{id}")
 	    @PreAuthorize("hasRole('ROLE_USER') || hasRole('ROLE_ADMIN')")
 	    public Oferta getOfertaById(@PathVariable Long id) {
 	        return ofertaService.obtenerOfertaPorId(id);
 	    }
+    
+	    //-------------Método para crear una oferta INTRODUCIENDO AL USUARIO-----------
+	    
+	   @PostMapping
+	    @PreAuthorize("hasRole('ROLE_USER') || hasRole('ROLE_ADMIN')")
+	    public Oferta createOferta(@RequestBody Oferta offer) {
+	        return ofertaService.agregarOferta(offer);
+	    }
 
+	    // Actualizar una Oferta
+	    @PutMapping("/actualizar/{id}")
+	    @PreAuthorize("hasRole('ROLE_USER') || hasRole('ROLE_ADMIN')")
+	    public Oferta updateOferta(@PathVariable Long id, @RequestBody Oferta offerDetails) {
+	        return ofertaService.actualizarOferta(id, offerDetails);
+	    }
+
+	    // Eliminar una oferta
+	    @DeleteMapping("/eliminar/{id}")
+	    @PreAuthorize("hasRole('ROLE_USER') || hasRole('ROLE_ADMIN')")
+	    public void deleteOferta(@PathVariable Long id) {
+	        ofertaService.eliminarOfertaAdmin(id);
+	    }
+	}
+	
+	
 	    
-	    // Crear una nueva oferta. Este es el último método que he intentado implementar.
+	    // Crear una nueva oferta. Este es el último método que he intentado implementar. PABLO ESTE!!!!
 	    
 	    
-	    
-	   /* @PostMapping
+	   /* 
+	    @PostMapping
 	    @PreAuthorize("hasRole('ROLE_USER')")
-	    public ResponseEntity<Void> crearOferta(@RequestBody Oferta oferta) {
-	        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-	        String username = userDetails.getUsername();
+	    public ResponseEntity<Void> crearOferta(@RequestBody Oferta oferta, @AuthenticationPrincipal Usuario usuario) {
+	        /*UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+	        String username = userDetails.getUsername(); 
+	    	
+	    	
 
-	        ofertaService.guardarOferta(oferta, username);
+	        ofertaService.guardarOferta(oferta, usuario);
 
 	        return new ResponseEntity<>(HttpStatus.CREATED);
-	    }*/
+	    } */
 	    
 	    
 	    
@@ -137,35 +163,17 @@ import jakarta.persistence.EntityNotFoundException;
 	        return new ResponseEntity<>(HttpStatus.CREATED);
 	    }
 */	    
-	    
-	    //-------------Método para crear una oferta-----------
-	    
-	   @PostMapping
-	    @PreAuthorize("hasRole('ROLE_USER') || hasRole('ROLE_ADMIN')")
-	    public Oferta createOferta(@RequestBody Oferta offer) {
-	        return ofertaService.agregarOferta(offer);
-	    }
-
-	    // Actualizar un libro
-	    @PutMapping("/{id}")
-	    @PreAuthorize("hasRole('ROLE_ADMIN')")
-	    public Oferta updateOferta(@PathVariable Long id, @RequestBody Oferta offerDetails) {
-	        return ofertaService.actualizarOferta(id, offerDetails);
-	    }
-
-	    // Eliminar una oferta
-	   /* @DeleteMapping("/{id}")
-	    @PreAuthorize("hasRole('ROLE_ADMIN')")
-	    public void deleteOferta(@PathVariable Long id) {
-	        ofertaService.eliminarOferta(id);
-	    }*/
-	    
-	    // CRUD endpoints, accesibles solo por ROLE_ADMIN
+	
+	
+	
+	
+	
+	
 	    /***
 	     * ############
 	     * #   Reservar Libro
 	     * ###########
-	     */
+	     
 	
 	    @PostMapping("/{libroId}/reservar")
 	    @PreAuthorize("hasRole('ROLE_USER')")
@@ -215,6 +223,6 @@ import jakarta.persistence.EntityNotFoundException;
 	      }
 	    }
 	    
-	    
+	    */
 	    
 	

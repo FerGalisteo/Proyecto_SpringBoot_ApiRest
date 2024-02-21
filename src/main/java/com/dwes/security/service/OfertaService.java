@@ -25,7 +25,6 @@ public interface OfertaService {
 
     Reserva reservarOferta(Oferta oferta, Usuario usuario);
 
-    void devolverLibro(Long reservaId);
 
 	void eliminarOfertaAdmin(Long id);
 

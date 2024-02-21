@@ -85,7 +85,11 @@ public class OfertaServiceImpl implements OfertaService{
 	        ofertaRepository.save(oferta);
 	    }*/
 	 
-	 
+	 @Override
+	public void guardarOferta(Oferta oferta, String username) {
+		// TODO Auto-generated method stub
+		
+	}
 	 
 
 	private boolean puedeCrearOferta(Long usuarioId, Oferta oferta) {
@@ -123,6 +127,7 @@ public class OfertaServiceImpl implements OfertaService{
 		
 	}
 	
+	//Método para eliminar una oferta SI LA HA CREADO EL QUE ESTÁ LOGEADO
 	@Override
 	public void eliminarOferta(Long ofertaId, String username) {
         // Obtenemos la oferta por ID
@@ -134,7 +139,7 @@ public class OfertaServiceImpl implements OfertaService{
             throw new AccessDeniedException("No tienes permisos para eliminar esta oferta");
         }
 
-        // Lógica para eliminar la oferta
+       
         ofertaRepository.deleteById(ofertaId);
     }
 
@@ -154,19 +159,7 @@ public class OfertaServiceImpl implements OfertaService{
 		// TODO Auto-generated method stub
 		return null;
 	}
-
-	@Override
-	public void devolverLibro(Long reservaId) {
-		// TODO Auto-generated method stub
-		
-	}
-
-
-	@Override
-	public void guardarOferta(Oferta oferta, String username) {
-		// TODO Auto-generated method stub
-		
-	}
+	
 	
 
 	
