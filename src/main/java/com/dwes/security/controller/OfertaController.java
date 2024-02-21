@@ -114,10 +114,18 @@ import jakarta.persistence.EntityNotFoundException;
 	        return ofertaService.actualizarOferta(id, offerDetails);
 	    }
 
-	    // Eliminar una oferta
+	    // Eliminar una oferta siendo ADMIN
+	    @DeleteMapping("/eliminarADMIN/{id}")
+	    @PreAuthorize("hasRole('ROLE_ADMIN')")
+	    public void deleteOferta(@PathVariable Long id) {
+	        ofertaService.eliminarOfertaAdmin(id);
+	    }
+	    
+	 // Eliminar una oferta siendo usuario pero esta incompleto porque falta arreglar el método
 	    @DeleteMapping("/eliminar/{id}")
 	    @PreAuthorize("hasRole('ROLE_USER') || hasRole('ROLE_ADMIN')")
-	    public void deleteOferta(@PathVariable Long id) {
+	    public void deleteOfertaUser(@PathVariable Long id) {
+	       // ofertaService.eliminarOferta(id);
 	        ofertaService.eliminarOfertaAdmin(id);
 	    }
 	}
