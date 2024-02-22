@@ -100,12 +100,12 @@ import jakarta.persistence.EntityNotFoundException;
 	    }
     
 	    //-------------Método para crear una oferta INTRODUCIENDO AL USUARIO-----------
-	    
+	   /* 
 	   @PostMapping
 	    @PreAuthorize("hasRole('ROLE_USER') || hasRole('ROLE_ADMIN')")
 	    public Oferta createOferta(@RequestBody Oferta offer) {
 	        return ofertaService.agregarOferta(offer);
-	    }
+	    }*/
 
 	    // Actualizar una Oferta
 	    @PutMapping("/actualizar/{id}")
@@ -128,28 +128,28 @@ import jakarta.persistence.EntityNotFoundException;
 	       // ofertaService.eliminarOferta(id);
 	        ofertaService.eliminarOfertaAdmin(id);
 	    }
-	}
+	
 	
 	
 	    
 	    // Crear una nueva oferta. Este es el último método que he intentado implementar. PABLO ESTE!!!!
 	    
 	    
-	   /* 
+	   
 	    @PostMapping
 	    @PreAuthorize("hasRole('ROLE_USER')")
 	    public ResponseEntity<Void> crearOferta(@RequestBody Oferta oferta, @AuthenticationPrincipal Usuario usuario) {
-	        /*UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+	        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 	        String username = userDetails.getUsername(); 
 	    	
 	    	
 
-	        ofertaService.guardarOferta(oferta, usuario);
+	        ofertaService.guardarOferta(oferta, username);
 
 	        return new ResponseEntity<>(HttpStatus.CREATED);
-	    } */
+	    } 
 	    
-	    
+	    }
 	    
 	    //Método para crear una oferta con el usuario automaticamente. No funciona /demasiado engorroso
 	    
