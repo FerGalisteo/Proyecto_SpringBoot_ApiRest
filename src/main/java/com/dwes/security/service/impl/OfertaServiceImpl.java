@@ -1,21 +1,19 @@
 package com.dwes.security.service.impl;
 
 import java.time.LocalDate;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.dwes.security.entities.EstadoReserva;
 import com.dwes.security.entities.Libro;
 import com.dwes.security.entities.LugarDisponible;
 import com.dwes.security.entities.Oferta;
 import com.dwes.security.entities.Reserva;
 import com.dwes.security.entities.Usuario;
-import com.dwes.security.error.exception.LibroNotFoundException;
 import com.dwes.security.error.exception.OfertaNotFoundException;
 import com.dwes.security.error.exception.UserNotFoundException;
 import com.dwes.security.repository.OfertaRepository;
@@ -78,18 +76,18 @@ public class OfertaServiceImpl implements OfertaService{
 	 
 	 
 	 //Este método para guardar una oferta es como el de arriba pero más simplificado
-	 /*Fallo al asignar el usuario.
 	 public void guardarOferta(Oferta oferta, String username) {
-	        Optional<Usuario> usuarioCreador = usuarioRepositorio.findByEmail(username);
+	        Usuario usuarioCreador = usuarioRepositorio.findByEmail(username)
+	        		 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado con email: " + username));
 	        oferta.setUsuarioCreador(usuarioCreador);
 	        ofertaRepository.save(oferta);
-	    }*/
-	 
+	    }
+	 /*
 	 @Override
 	public void guardarOferta(Oferta oferta, String username) {
 		// TODO Auto-generated method stub
 		
-	}
+	}*/
 	 
 
 	private boolean puedeCrearOferta(Long usuarioId, Oferta oferta) {
