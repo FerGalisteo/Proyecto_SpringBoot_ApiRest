@@ -1,7 +1,6 @@
 package com.dwes.security.controller;
 
-import java.time.LocalDate;
-import java.util.Date;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,212 +24,178 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.dwes.security.dto.response.error.DetailsResponse;
-import com.dwes.security.dto.response.error.ErrorDetailsResponse;
-import com.dwes.security.entities.Libro;
 import com.dwes.security.entities.Oferta;
-import com.dwes.security.entities.Reserva;
+import com.dwes.security.entities.Role;
 import com.dwes.security.entities.Usuario;
 import com.dwes.security.service.OfertaService;
-import com.dwes.security.service.UserService;
-import com.dwes.security.service.user.ReservaService;
-
-import jakarta.persistence.EntityNotFoundException;
-
-/** 
- * Nota 1: Es preferible mantener un solo idioma para el proyecto 
- * es discutible si se debería llamar BookController.java
- *  
- *       LibrosController.java 'llanito style ' 
- */ 
-
-// (o yanito) a una variedad lingüística utilizada 
-//  comúnmente por los habitantes de Gibraltar
 
 /**
- * Nota 2:
+ * - Usa la Entidad directamente si tu aplicación es sencilla, deseas mantener
+ * el código al mínimo, y la API refleja directamente tu modelo de dominio.
  * 
- *  - Usa DTO (LibroRequest) si necesitas control de seguridad adicional,
- *  desacoplamiento, validaciones específicas de la API,
- *  o personalización para diferentes operaciones.
- *  
- *  vs
- *  
- *  - Usa la Entidad directamente si tu aplicación es sencilla, 
- *  deseas mantener el código al mínimo, 
- *  y la API refleja directamente tu modelo de dominio.
- *  
  */
-	@RestController
-	@RequestMapping("/api/v1/ofertas")
-	public class OfertaController {
+@RestController
+@RequestMapping("/api/v1/ofertas")
+public class OfertaController {
 
-    	private static final Logger logger = LoggerFactory.getLogger(OfertaController.class);
+	private static final Logger logger = LoggerFactory.getLogger(OfertaController.class);
 
-	    @Autowired
-	    private OfertaService ofertaService;
-	    
-	    @Autowired
-	    private ReservaService reservaService;
-	    
-	    @Autowired
-	    private UserService userService;
+	@Autowired
+	private OfertaService ofertaService;
 
-	    // Endpoint para obtener un listado de ofertas, accesible solo por ROLE_USER
-	    @GetMapping("/listar")
-	    @PreAuthorize("hasRole('ROLE_USER') || hasRole('ROLE_ADMIN')")
-	    public ResponseEntity<Page<Oferta>> listarTodasLasOfertas(
-	            @RequestParam(defaultValue = "0") int page,
-	            @RequestParam(defaultValue = "10") int size) {
-	        
-	        logger.info("OfertasController :: listarTodasLasOfertas");
-	        Pageable pageable = PageRequest.of(page, size);
+	// Endpoint para obtener un listado de ofertas, accesible solo por ROLE_USER
+	@GetMapping
+	@PreAuthorize("hasRole('ROLE_USER') || hasRole('ROLE_ADMIN')")
+	public ResponseEntity<Page<Oferta>> listarTodasLasOfertas(
+	        @RequestParam(defaultValue = "0") int page,
+	        @RequestParam(defaultValue = "10") int size,
+	        @RequestParam(value = "usuario", required = false) String usuario,
+	        @RequestParam(value = "precioMax", required = false) Double precioMax) {
+
+	    logger.info("OfertasController :: listarTodasLasOfertas");
+	    Pageable pageable = PageRequest.of(page, size);
+
+	    if (usuario != null) {
+	        // Filtrar por usuario
+	        Page<Oferta> listaUsers = ofertaService.listarOfertaPorUsuario(usuario, pageable);
+	        return new ResponseEntity<>(listaUsers, HttpStatus.OK);
+	    } else if (precioMax != null) {
+	        // Filtrar por precio máximo
+	        Page<Oferta> listaPorPrecio = ofertaService.listarOfertasPorPrecioMaximo(precioMax, pageable);
+	        return new ResponseEntity<>(listaPorPrecio, HttpStatus.OK);
+	    } else {
+	        // Obtener todas las ofertas si no se proporciona usuario ni precioMax
 	        Page<Oferta> ofertas = ofertaService.listarTodasLasOfertas(pageable);
-	        
-	   
-	        
 	        return new ResponseEntity<>(ofertas, HttpStatus.OK);
 	    }
-	    
-	 // Leer una oferta por ID
-	    @GetMapping("/listar/{id}")
-	    @PreAuthorize("hasRole('ROLE_USER') || hasRole('ROLE_ADMIN')")
-	    public Oferta getOfertaById(@PathVariable Long id) {
-	        return ofertaService.obtenerOfertaPorId(id);
-	    }
-    
-	    //-------------Método para crear una oferta INTRODUCIENDO AL USUARIO-----------
-	   /* 
-	   @PostMapping
-	    @PreAuthorize("hasRole('ROLE_USER') || hasRole('ROLE_ADMIN')")
-	    public Oferta createOferta(@RequestBody Oferta offer) {
-	        return ofertaService.agregarOferta(offer);
-	    }*/
+	}
 
-	    // Actualizar una Oferta
-	    @PutMapping("/actualizar/{id}")
-	    @PreAuthorize("hasRole('ROLE_USER') || hasRole('ROLE_ADMIN')")
-	    public Oferta updateOferta(@PathVariable Long id, @RequestBody Oferta offerDetails) {
-	        return ofertaService.actualizarOferta(id, offerDetails);
-	    }
 
-	    // Eliminar una oferta siendo ADMIN
-	    @DeleteMapping("/eliminarADMIN/{id}")
-	    @PreAuthorize("hasRole('ROLE_ADMIN')")
-	    public void deleteOferta(@PathVariable Long id) {
-	        ofertaService.eliminarOfertaAdmin(id);
-	    }
-	    
-	 // Eliminar una oferta siendo usuario pero esta incompleto porque falta arreglar el método
-	    @DeleteMapping("/eliminar/{id}")
-	    @PreAuthorize("hasRole('ROLE_USER') || hasRole('ROLE_ADMIN')")
-	    public void deleteOfertaUser(@PathVariable Long id) {
-	       // ofertaService.eliminarOferta(id);
-	        ofertaService.eliminarOfertaAdmin(id);
-	    }
-	
-	
-	
-	    
-	    // Crear una nueva oferta. Este es el último método que he intentado implementar. PABLO ESTE!!!!
-	    
-	    
-	   
-	    @PostMapping
-	    @PreAuthorize("hasRole('ROLE_USER')")
-	    public ResponseEntity<Void> crearOferta(@RequestBody Oferta oferta, @AuthenticationPrincipal Usuario usuario) {
-	        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-	        String username = userDetails.getUsername(); 
-	    	
-	    	
+	// Leer una oferta por ID
+	@GetMapping("/listar/{id}")
+	@PreAuthorize("hasRole('ROLE_USER') || hasRole('ROLE_ADMIN')")
+	public Oferta getOfertaById(@PathVariable Long id) {
+		return ofertaService.obtenerOfertaPorId(id);
+	}
 
-	        ofertaService.guardarOferta(oferta, username);
+	// -------------Método para crear una oferta INTRODUCIENDO AL USUARIO-----------
+	/*
+	 * @PostMapping
+	 * 
+	 * @PreAuthorize("hasRole('ROLE_USER') || hasRole('ROLE_ADMIN')") public Oferta
+	 * createOferta(@RequestBody Oferta offer) { return
+	 * ofertaService.agregarOferta(offer); }
+	 */
+	@PostMapping
+	@PreAuthorize("hasRole('ROLE_USER')")
+	public ResponseEntity<Void> crearOferta(@RequestBody Oferta oferta, @AuthenticationPrincipal Usuario usuario) {
+		UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		String username = userDetails.getUsername();
+		ofertaService.guardarOferta(oferta, username);
+		return new ResponseEntity<>(HttpStatus.CREATED);
+	}
 
-	        return new ResponseEntity<>(HttpStatus.CREATED);
-	    } 
-	    
-	    }
-	    
-	    //Método para crear una oferta con el usuario automaticamente. No funciona /demasiado engorroso
-	    
-	   /* 
-	    @PostMapping
-	    @PreAuthorize("hasRole('ROLE_USER') || hasROle('ROLE_ADMIN')")
-	    public ResponseEntity<Void> crearOferta(@RequestBody Oferta oferta) {
-	        // Obtén el nombre de usuario del usuario autenticado
-	        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-	        String username = userDetails.getUsername();
+	// Actualizar una Oferta
+	@PutMapping("/{id}")
+	@PreAuthorize("hasRole('ROLE_USER') || hasRole('ROLE_ADMIN')")
+	public Oferta updateOferta(@PathVariable Long id, @RequestBody Oferta offerDetails) {
+		return ofertaService.actualizarOferta(id, offerDetails);
+	}
 
-	        // Asigna el usuario creador a la oferta
-	        Usuario usuarioCreador = userService.findByUsername(username);
-	        oferta.setUsuarioCreador(usuarioCreador);
+	/* 
+	 * @DeleteMapping("/{id}") -TODO COMENTAR
+	 */
 
-	        // Guarda la oferta
-	        ofertaService.crearOferta(oferta);
+	// Eliminar una oferta siendo usuario registrado
+	@DeleteMapping("/{id}")
+	@PreAuthorize("hasRole('ROLE_USER') || hasRole('ROLE_ADMIN')")
+	public void deleteOfertaUser(@PathVariable Long id, @AuthenticationPrincipal Usuario usuario) {
+		UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		String username = userDetails.getUsername();
 
-	        return new ResponseEntity<>(HttpStatus.CREATED);
-	    }
-*/	    
-	
-	
-	
-	
-	
-	
-	    /***
-	     * ############
-	     * #   Reservar Libro
-	     * ###########
-	     
-	
-	    @PostMapping("/{libroId}/reservar")
-	    @PreAuthorize("hasRole('ROLE_USER')")
-	    public ResponseEntity<?> realizarReserva(@PathVariable Long libroId, @AuthenticationPrincipal Usuario usuario) {
-	    	  try {
-	              // Agregar log de la operación
-	              logger.info("LibrosController :: realizarReserva id Libro: {} Usuario: {}", libroId, usuario.getUsername());
+		Set<Role> roles = usuario.getRoles();
 
-	              if (!reservaService.esLibroDisponibleParaReserva(libroId)) {
-	                  ErrorDetailsResponse errorDetails = new ErrorDetailsResponse(
-	                          new Date(),
-	                          "Conflicto",
-	                          "El libro no está disponible para reserva."
-	                  );
-	                  return ResponseEntity.status(HttpStatus.CONFLICT).body(errorDetails);
-	              }
+		if (roles.contains(Role.ROLE_ADMIN)) {
+			ofertaService.eliminarOfertaAdmin(id);
+		} else {
+			ofertaService.eliminarOferta(id, username);
+		}
 
-	              LocalDate fechaReserva = LocalDate.now();
-	              LocalDate fechaExpiracion = fechaReserva.plusDays(7);
-
-	              // Asegúrate de que el ID del usuario sea de tipo Long
-	              Long usuarioId = usuario.getId(); // Suponiendo que getId() devuelve un Long
-
-	              Reserva reserva = reservaService.crearReserva(libroId, usuarioId, fechaReserva, fechaExpiracion);
-	              DetailsResponse details_reserva = new DetailsResponse(
-	                      new Date(),
-	                      "Reservado:'" + reserva.getLibro().getTitulo()+"', "+ reserva.getLibro().getAutor(),
-	                      "Expiración reserva:'" + reserva.getFechaExpiracion()+"'"
-	                    
-	              );
-	              return ResponseEntity.status(HttpStatus.CREATED).body(details_reserva);
-	          } catch (EntityNotFoundException e) {
-	              ErrorDetailsResponse errorDetails = new ErrorDetailsResponse(
-	                      new Date(),
-	                      "No encontrado",
-	                      e.getMessage()
-	              );
-	              return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorDetails);
-	          } catch (Exception e) {
-	              ErrorDetailsResponse errorDetails = new ErrorDetailsResponse(
-	                      new Date(),
-	                      "Error interno del servidor",
-	                      e.getMessage()
-	              );
-	              return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorDetails);
-	          }
-	      }
-	    }
-	    
-	    */
-	    
+	}
 	
+	/**
+	 * Listar Ofertas por Usuario
+	 *
+	 */
+	
+	@GetMapping("/usuario/{username}")
+	@PreAuthorize("hasRole('ROLE_USER') || hasRole('ROLE_ADMIN')")
+	public ResponseEntity<Page<Oferta>> listarOfertasPorUsuario(
+	        @PathVariable String username,
+	        @RequestParam(defaultValue = "0") int page,
+	        @RequestParam(defaultValue = "10") int size) {
+	    logger.info("OfertasController :: listarOfertasPorUsuario");
+	    Pageable pageable = PageRequest.of(page, size);
+	    Page<Oferta> ofertas = ofertaService.listarOfertaPorUsuario(username, pageable);
+	    return new ResponseEntity<>(ofertas, HttpStatus.OK);
+	}
+
+
+	/**
+	 * FILTRAR OFERTAS POR PRECIO MAXIMO
+	 * @param precioMax
+	 * @param page
+	 * @param size
+	 * @return
+	 */
+	@GetMapping("/filtrar")
+	@PreAuthorize("hasRole('ROLE_USER') || hasRole('ROLE_ADMIN')")
+	public ResponseEntity<Page<Oferta>> filtrarOfertasPorPrecio(
+	        @RequestParam(required = false) Double precioMax,
+	        @RequestParam(defaultValue = "0") int page,
+	        @RequestParam(defaultValue = "10") int size) {
+	    logger.info("OfertasController :: filtrarOfertasPorPrecio");
+	    Pageable pageable = PageRequest.of(page, size);
+	    Page<Oferta> ofertas = ofertaService.listarOfertasPorPrecioMaximo(precioMax, pageable);
+	    return new ResponseEntity<>(ofertas, HttpStatus.OK);
+	}
+
+}
+
+/***
+ * ############ # Reservar Libro ###########
+ * 
+ * 
+ * @PostMapping("/{libroId}/reservar") @PreAuthorize("hasRole('ROLE_USER')")
+ * public ResponseEntity<?> realizarReserva(@PathVariable Long
+ * libroId, @AuthenticationPrincipal Usuario usuario) { try { // Agregar log de
+ * la operación logger.info("LibrosController :: realizarReserva id Libro: {}
+ * Usuario: {}", libroId, usuario.getUsername());
+ * 
+ * if (!reservaService.esLibroDisponibleParaReserva(libroId)) {
+ * ErrorDetailsResponse errorDetails = new ErrorDetailsResponse( new Date(),
+ * "Conflicto", "El libro no está disponible para reserva." ); return
+ * ResponseEntity.status(HttpStatus.CONFLICT).body(errorDetails); }
+ * 
+ * LocalDate fechaReserva = LocalDate.now(); LocalDate fechaExpiracion =
+ * fechaReserva.plusDays(7);
+ * 
+ * // Asegúrate de que el ID del usuario sea de tipo Long Long usuarioId =
+ * usuario.getId(); // Suponiendo que getId() devuelve un Long
+ * 
+ * Reserva reserva = reservaService.crearReserva(libroId, usuarioId,
+ * fechaReserva, fechaExpiracion); DetailsResponse details_reserva = new
+ * DetailsResponse( new Date(), "Reservado:'" +
+ * reserva.getLibro().getTitulo()+"', "+ reserva.getLibro().getAutor(),
+ * "Expiración reserva:'" + reserva.getFechaExpiracion()+"'"
+ * 
+ * ); return ResponseEntity.status(HttpStatus.CREATED).body(details_reserva); }
+ * catch (EntityNotFoundException e) { ErrorDetailsResponse errorDetails = new
+ * ErrorDetailsResponse( new Date(), "No encontrado", e.getMessage() ); return
+ * ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorDetails); } catch
+ * (Exception e) { ErrorDetailsResponse errorDetails = new ErrorDetailsResponse(
+ * new Date(), "Error interno del servidor", e.getMessage() ); return
+ * ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorDetails); }
+ * } }
+ * 
+ */
