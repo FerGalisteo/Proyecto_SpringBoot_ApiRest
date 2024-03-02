@@ -7,7 +7,6 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.dwes.security.entities.Libro;
 import com.dwes.security.entities.Oferta;
 import com.dwes.security.entities.Reserva;
 import com.dwes.security.entities.Usuario;

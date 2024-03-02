@@ -43,7 +43,7 @@ public class OfertaController {
 	@Autowired
 	private OfertaService ofertaService;
 
-	// Endpoint para obtener un listado de ofertas, accesible solo por ROLE_USER
+	// Endpoint para obtener un listado de oferta
 	@GetMapping
 	@PreAuthorize("hasRole('ROLE_USER') || hasRole('ROLE_ADMIN')")
 	public ResponseEntity<Page<Oferta>> listarTodasLasOfertas(
@@ -78,14 +78,7 @@ public class OfertaController {
 		return ofertaService.obtenerOfertaPorId(id);
 	}
 
-	// -------------Método para crear una oferta INTRODUCIENDO AL USUARIO-----------
-	/*
-	 * @PostMapping
-	 * 
-	 * @PreAuthorize("hasRole('ROLE_USER') || hasRole('ROLE_ADMIN')") public Oferta
-	 * createOferta(@RequestBody Oferta offer) { return
-	 * ofertaService.agregarOferta(offer); }
-	 */
+	// ------POST-------Método para crear una oferta-----------
 	@PostMapping
 	@PreAuthorize("hasRole('ROLE_USER')")
 	public ResponseEntity<Void> crearOferta(@RequestBody Oferta oferta, @AuthenticationPrincipal Usuario usuario) {
