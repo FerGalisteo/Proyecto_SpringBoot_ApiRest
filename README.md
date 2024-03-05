@@ -1,4 +1,4 @@
-# JWT Authentication and Authorization with Spring Boot 3 and Spring Security 6
+# Documentación Proyecto APIREST OFERTAS
 
-Medium
-Article: https://medium.com/@truongbui95/jwt-authentication-and-authorization-with-spring-boot-3-and-spring-security-6-2f90f9337421
+Documnentación API POSTMAN
+https://documenter.getpostman.com/view/32188973/2sA2xe4ZHr
