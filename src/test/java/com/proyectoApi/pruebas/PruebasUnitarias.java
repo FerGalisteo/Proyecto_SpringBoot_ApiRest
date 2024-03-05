@@ -1,11 +1,18 @@
 package com.proyectoApi.pruebas;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import org.junit.jupiter.api.BeforeEach;
+import java.util.Collections;
+import java.util.Optional;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -13,45 +20,100 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 
-import com.dwes.security.controller.OfertaController;
+import com.dwes.security.SecurityApplication;
 import com.dwes.security.entities.Oferta;
-import com.dwes.security.service.OfertaService;
+import com.dwes.security.entities.Role;
+import com.dwes.security.entities.Usuario;
+import com.dwes.security.error.exception.OfertaNotFoundException;
+import com.dwes.security.repository.OfertaRepository;
+import com.dwes.security.repository.UserRepository;
+import com.dwes.security.service.impl.OfertaServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
-@SpringBootTest
+@SpringBootTest(classes = SecurityApplication.class)
 class PruebasUnitarias {
 
 	@InjectMocks
-    private OfertaController ofertaController;
+	private OfertaServiceImpl ofertaService;
 
-    @Mock
-    private OfertaService ofertaService;
+	@Mock
+	private OfertaRepository ofertaRepository;
 
-    @BeforeEach
-    public void setUp() {
-        // Configuración adicional si es necesaria
-    }
+	@Mock
+	private UserRepository userRepository;
 
-    @Test
+	@Test
+	public void testAgregarOferta() {
+		// Configuración del repositorio mock
+		Oferta ofertaMock = mock(Oferta.class);
+		when(ofertaRepository.save(any())).thenReturn(ofertaMock);
+
+		// Ejecutar el método del servicio
+		Oferta result = ofertaService.agregarOferta(new Oferta());
+
+		// Verificar que se llama al repositorio y se devuelve la oferta esperada
+		verify(ofertaRepository).save(any());
+		assertSame(ofertaMock, result);
+	}
+
+	@Test
+	public void testGuardarOferta() {
+		// Configuración del repositorio y del usuario mock
+		Oferta ofertaMock = mock(Oferta.class);
+		Usuario usuarioMock = mock(Usuario.class);
+		when(userRepository.findByEmail(anyString())).thenReturn(java.util.Optional.of(usuarioMock));
+		when(ofertaRepository.save(any())).thenReturn(ofertaMock);
+
+		// Ejecutar el método del servicio
+		ofertaService.guardarOferta(new Oferta(), "username");
+
+		// Verificar que se llama al repositorio y al usuarioRepository
+		verify(ofertaRepository).save(any());
+		verify(userRepository).findByEmail("username");
+	}
+	
+	@Test
     public void testListarTodasLasOfertas() {
-        // Configuración de datos de prueba
-    	Page<Oferta> mockOfertas = new PageImpl<>(mockOfertasList, PageRequest.of(0, 10), mockOfertasList.size());
-        
-        when(ofertaService.listarTodasLasOfertas(any(Pageable.class))).thenReturn(mockOfertas);
+        // Configuración del repositorio mock
+        Page<Oferta> ofertasMock = mock(Page.class);
+        when(ofertaRepository.findAll(any(Pageable.class))).thenReturn(ofertasMock);
 
-        // Llamada al método del controlador
-        ResponseEntity<Page<Oferta>> response = ofertaController.listarTodasLasOfertas(0, 10, null, null);
+        // Ejecutar el método del servicio
+        Page<Oferta> result = ofertaService.listarTodasLasOfertas(Pageable.unpaged());
 
-        // Verificación de resultados
-        verify(ofertaService).listarTodasLasOfertas(any(Pageable.class));
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(mockOfertas, response.getBody());
+        // Verificar que se llama al repositorio y se devuelve la lista de ofertas
+        verify(ofertaRepository).findAll(any(Pageable.class));
+        assertSame(ofertasMock, result);
     }
+	
+	@Test
+    public void testObtenerOfertaPorIdExistente() {
+        // Configuración del repositorio mock
+        Oferta ofertaMock = mock(Oferta.class);
+        when(ofertaRepository.findById(1L)).thenReturn(java.util.Optional.of(ofertaMock));
 
-    // Puedes agregar pruebas similares para los otros casos (filtrado por usuario, filtrado por precio máximo)
+        // Ejecutar el método del servicio
+        Oferta result = ofertaService.obtenerOfertaPorId(1L);
+
+        // Verificar que se llama al repositorio y se devuelve la oferta
+        verify(ofertaRepository).findById(1L);
+        assertSame(ofertaMock, result);
+    }
+	
+	@Test
+    public void testObtenerOfertaPorIdNoExistente() {
+        // Configuración del repositorio mock
+        when(ofertaRepository.findById(1L)).thenReturn(java.util.Optional.empty());
+
+        // Ejecutar el método del servicio y verificar la excepción esperada
+        assertThrows(OfertaNotFoundException.class, () -> ofertaService.obtenerOfertaPorId(1L));
+
+        // Verificar que se llama al repositorio
+        verify(ofertaRepository).findById(1L);
+    }
+	
+
+	
 }

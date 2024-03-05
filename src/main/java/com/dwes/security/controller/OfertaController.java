@@ -72,7 +72,7 @@ public class OfertaController {
 
 
 	// Leer una oferta por ID
-	@GetMapping("/listar/{id}")
+	@GetMapping("/{id}")
 	@PreAuthorize("hasRole('ROLE_USER') || hasRole('ROLE_ADMIN')")
 	public Oferta getOfertaById(@PathVariable Long id) {
 		return ofertaService.obtenerOfertaPorId(id);
@@ -115,6 +115,12 @@ public class OfertaController {
 		}
 
 	}
+	
+	
+	
+	/*
+	 *--------Filtros pero no son necesarios estos dado que utilizamos los que tenemos en el propio listar integrados. 
+	*/
 	
 	/**
 	 * Listar Ofertas por Usuario
