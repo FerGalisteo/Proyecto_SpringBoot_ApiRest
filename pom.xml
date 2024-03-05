@@ -9,7 +9,7 @@
 		<version>3.1.0-RC1</version>
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.proyecto</groupId>
+	<groupId>com.dwes.security</groupId>
 	<artifactId>proyectoAPI</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>proyectoAPI</name>
