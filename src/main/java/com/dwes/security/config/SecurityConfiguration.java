@@ -41,15 +41,7 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(request ->           
                 request
 
-                .requestMatchers("/api/v1/auth/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/v1/libros/**").hasAnyAuthority(Role.ROLE_USER.toString(), Role.ROLE_ADMIN.toString())
-                .requestMatchers(HttpMethod.POST, "/api/v1/libros/*/reservar/**").hasAuthority(Role.ROLE_USER.toString()) // Permite a ROLE_USER realizar reservas
-                
-               
-                .requestMatchers(HttpMethod.POST, "/api/v1/libros/**").hasAuthority(Role.ROLE_ADMIN.toString())
- 	           .requestMatchers(HttpMethod.PUT, "/api/v1/libros/**").hasAuthority(Role.ROLE_ADMIN.toString())
- 	           .requestMatchers(HttpMethod.DELETE, "/api/v1/libros/**").hasAuthority(Role.ROLE_ADMIN.toString())
- 	           
+                .requestMatchers("/api/v1/auth/**").permitAll()	           
  	            .requestMatchers(HttpMethod.GET, "/api/v1/ofertas/**").hasAnyAuthority(Role.ROLE_USER.toString(), Role.ROLE_ADMIN.toString())
                 .requestMatchers(HttpMethod.POST, "/api/v1/ofertas/**").hasAnyAuthority(Role.ROLE_USER.toString(), Role.ROLE_ADMIN.toString())
                 .requestMatchers(HttpMethod.PUT, "/api/v1/ofertas/**").hasAnyAuthority(Role.ROLE_USER.toString(), Role.ROLE_ADMIN.toString())

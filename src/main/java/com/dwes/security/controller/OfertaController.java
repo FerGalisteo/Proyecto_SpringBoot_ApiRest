@@ -43,7 +43,7 @@ public class OfertaController {
 	@Autowired
 	private OfertaService ofertaService;
 
-	// Endpoint para obtener un listado de ofertas, accesible solo por ROLE_USER
+	// Endpoint para obtener un listado de oferta
 	@GetMapping
 	@PreAuthorize("hasRole('ROLE_USER') || hasRole('ROLE_ADMIN')")
 	public ResponseEntity<Page<Oferta>> listarTodasLasOfertas(
@@ -72,20 +72,13 @@ public class OfertaController {
 
 
 	// Leer una oferta por ID
-	@GetMapping("/listar/{id}")
+	@GetMapping("/{id}")
 	@PreAuthorize("hasRole('ROLE_USER') || hasRole('ROLE_ADMIN')")
 	public Oferta getOfertaById(@PathVariable Long id) {
 		return ofertaService.obtenerOfertaPorId(id);
 	}
 
-	// -------------Método para crear una oferta INTRODUCIENDO AL USUARIO-----------
-	/*
-	 * @PostMapping
-	 * 
-	 * @PreAuthorize("hasRole('ROLE_USER') || hasRole('ROLE_ADMIN')") public Oferta
-	 * createOferta(@RequestBody Oferta offer) { return
-	 * ofertaService.agregarOferta(offer); }
-	 */
+	// ------POST-------Método para crear una oferta-----------
 	@PostMapping
 	@PreAuthorize("hasRole('ROLE_USER')")
 	public ResponseEntity<Void> crearOferta(@RequestBody Oferta oferta, @AuthenticationPrincipal Usuario usuario) {
@@ -98,8 +91,18 @@ public class OfertaController {
 	// Actualizar una Oferta
 	@PutMapping("/{id}")
 	@PreAuthorize("hasRole('ROLE_USER') || hasRole('ROLE_ADMIN')")
-	public Oferta updateOferta(@PathVariable Long id, @RequestBody Oferta offerDetails) {
-		return ofertaService.actualizarOferta(id, offerDetails);
+	public Oferta updateOferta(@PathVariable Long id, @RequestBody Oferta oferta, @AuthenticationPrincipal Usuario usuario) {
+		UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		String username = userDetails.getUsername();
+
+		Set<Role> roles = usuario.getRoles();
+
+		if (roles.contains(Role.ROLE_ADMIN)) {
+			return ofertaService.actualizarOfertaAdmin(id, oferta);
+		} else {
+			return ofertaService.actualizarOferta(id, oferta, username);
+		}
+
 	}
 
 	/* 
@@ -122,6 +125,12 @@ public class OfertaController {
 		}
 
 	}
+	
+	
+	
+	/*
+	 *--------Filtros pero no son necesarios estos dado que utilizamos los que tenemos en el propio listar integrados. 
+	*/
 	
 	/**
 	 * Listar Ofertas por Usuario
@@ -161,41 +170,3 @@ public class OfertaController {
 	}
 
 }
-
-/***
- * ############ # Reservar Libro ###########
- * 
- * 
- * @PostMapping("/{libroId}/reservar") @PreAuthorize("hasRole('ROLE_USER')")
- * public ResponseEntity<?> realizarReserva(@PathVariable Long
- * libroId, @AuthenticationPrincipal Usuario usuario) { try { // Agregar log de
- * la operación logger.info("LibrosController :: realizarReserva id Libro: {}
- * Usuario: {}", libroId, usuario.getUsername());
- * 
- * if (!reservaService.esLibroDisponibleParaReserva(libroId)) {
- * ErrorDetailsResponse errorDetails = new ErrorDetailsResponse( new Date(),
- * "Conflicto", "El libro no está disponible para reserva." ); return
- * ResponseEntity.status(HttpStatus.CONFLICT).body(errorDetails); }
- * 
- * LocalDate fechaReserva = LocalDate.now(); LocalDate fechaExpiracion =
- * fechaReserva.plusDays(7);
- * 
- * // Asegúrate de que el ID del usuario sea de tipo Long Long usuarioId =
- * usuario.getId(); // Suponiendo que getId() devuelve un Long
- * 
- * Reserva reserva = reservaService.crearReserva(libroId, usuarioId,
- * fechaReserva, fechaExpiracion); DetailsResponse details_reserva = new
- * DetailsResponse( new Date(), "Reservado:'" +
- * reserva.getLibro().getTitulo()+"', "+ reserva.getLibro().getAutor(),
- * "Expiración reserva:'" + reserva.getFechaExpiracion()+"'"
- * 
- * ); return ResponseEntity.status(HttpStatus.CREATED).body(details_reserva); }
- * catch (EntityNotFoundException e) { ErrorDetailsResponse errorDetails = new
- * ErrorDetailsResponse( new Date(), "No encontrado", e.getMessage() ); return
- * ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorDetails); } catch
- * (Exception e) { ErrorDetailsResponse errorDetails = new ErrorDetailsResponse(
- * new Date(), "Error interno del servidor", e.getMessage() ); return
- * ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorDetails); }
- * } }
- * 
- */
