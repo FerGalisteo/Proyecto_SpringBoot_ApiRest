@@ -16,7 +16,8 @@ public interface OfertaService {
 
 	Oferta obtenerOfertaPorId(Long id);
 
-	Oferta actualizarOferta(Long id, Oferta oferta);
+	Oferta actualizarOferta(Long id, Oferta oferta, String username);
+	Oferta actualizarOfertaAdmin(Long id, Oferta oferta);
 
 	Page<Oferta> listarOfertaPorUsuario(String username, Pageable pageable);
 

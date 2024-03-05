@@ -91,8 +91,18 @@ public class OfertaController {
 	// Actualizar una Oferta
 	@PutMapping("/{id}")
 	@PreAuthorize("hasRole('ROLE_USER') || hasRole('ROLE_ADMIN')")
-	public Oferta updateOferta(@PathVariable Long id, @RequestBody Oferta offerDetails) {
-		return ofertaService.actualizarOferta(id, offerDetails);
+	public Oferta updateOferta(@PathVariable Long id, @RequestBody Oferta oferta, @AuthenticationPrincipal Usuario usuario) {
+		UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		String username = userDetails.getUsername();
+
+		Set<Role> roles = usuario.getRoles();
+
+		if (roles.contains(Role.ROLE_ADMIN)) {
+			return ofertaService.actualizarOfertaAdmin(id, oferta);
+		} else {
+			return ofertaService.actualizarOferta(id, oferta, username);
+		}
+
 	}
 
 	/* 
