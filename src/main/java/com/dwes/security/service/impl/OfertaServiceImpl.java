@@ -8,14 +8,11 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.dwes.security.entities.Oferta;
-import com.dwes.security.entities.Reserva;
 import com.dwes.security.entities.Usuario;
 import com.dwes.security.error.exception.OfertaNotFoundException;
 import com.dwes.security.repository.OfertaRepository;
 import com.dwes.security.repository.UserRepository;
 import com.dwes.security.service.OfertaService;
-
-import jakarta.validation.Valid;
 
 @Service
 public class OfertaServiceImpl implements OfertaService {
@@ -130,12 +127,6 @@ public class OfertaServiceImpl implements OfertaService {
 	private boolean puedeEliminarOferta(String username, Oferta oferta) {
 		// Verifica si el usuario logueado coincide con el usuario que creó la oferta
 		return oferta.getUsuarioCreador().getUsername().equals(username);
-	}
-
-	@Override
-	public Reserva reservarOferta(Oferta oferta, Usuario usuario) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	/**

@@ -1,19 +1,14 @@
 package com.dwes.security.config;
 
-import java.util.Locale;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import com.dwes.security.entities.Libro;
 import com.dwes.security.entities.Role;
 import com.dwes.security.entities.Usuario;
-import com.dwes.security.repository.LibroRepository;
 import com.dwes.security.repository.UserRepository;
-import com.github.javafaker.Faker;
 
 @Profile("demo")
 @Component
@@ -21,21 +16,14 @@ public class InitializationData implements CommandLineRunner {
 
     @Autowired
     private UserRepository usuarioRepository;
-    
-    private final boolean borrarLibros = false; // Variable para controlar el borrado de datos
-    
-    @Autowired
-    private LibroRepository libroRepository;
-
+ 
     @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) throws Exception {
     	
-    	if (borrarLibros) {
-            libroRepository.deleteAll(); // Borra todos los libros existentes
-        }
+    
     	
     	try {
     		// Usuario 1 - Rol USER
@@ -71,15 +59,6 @@ public class InitializationData implements CommandLineRunner {
     	}catch(Exception e) {
     		
     	}
-    	Faker faker = new Faker(new Locale("es"));
-        for (int i = 0; i < 10; i++) { // Generar 10 libros ficticios
-            Libro libro = new Libro();
-            libro.setTitulo(faker.book().title());
-            libro.setAutor(faker.book().author());
-            libro.setIsbn(faker.number().digits(10)); // Genera un ISBN ficticio
-  
-            libroRepository.save(libro);
-        }
         
     }
 }

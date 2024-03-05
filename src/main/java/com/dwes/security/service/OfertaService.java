@@ -3,10 +3,7 @@ package com.dwes.security.service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import com.dwes.security.entities.Libro;
 import com.dwes.security.entities.Oferta;
-import com.dwes.security.entities.Reserva;
-import com.dwes.security.entities.Usuario;
 
 public interface OfertaService {
 
@@ -21,7 +18,7 @@ public interface OfertaService {
 
 	Page<Oferta> listarOfertaPorUsuario(String username, Pageable pageable);
 
-	Reserva reservarOferta(Oferta oferta, Usuario usuario);
+	//Reserva reservarOferta(Oferta oferta, Usuario usuario);
 
 	void eliminarOfertaAdmin(Long id);
 
