@@ -7,7 +7,6 @@ import com.dwes.security.entities.Oferta;
 
 public interface OfertaService {
 
-	Oferta agregarOferta(Oferta oferta);
 
 	Page<Oferta> listarTodasLasOfertas(Pageable pageable);
 

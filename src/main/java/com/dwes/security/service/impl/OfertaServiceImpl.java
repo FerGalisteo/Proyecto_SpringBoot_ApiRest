@@ -20,17 +20,18 @@ public class OfertaServiceImpl implements OfertaService {
 	@Autowired
 	private OfertaRepository ofertaRepository;
 
-	@Override
-	public Oferta agregarOferta(Oferta oferta) {
-		// TODO Auto-generated method stub
-		return ofertaRepository.save(oferta);
-	}
+
 
 	@Autowired
 	private UserRepository usuarioRepositorio;
 
-	// Este método para guardar una oferta es como el de arriba pero más
-	// simplificado
+	/**
+	 * Método para guardar una oferta.
+	 * Recibe la oferta a guardar y el usuario que la solicita.
+	 * Comprueba que el usuario existe
+	 * Asigna el usuario a la oferta
+	 * Guarda la oferta
+	 */
 	public void guardarOferta(Oferta oferta, String username) {
 		Usuario usuarioCreador = usuarioRepositorio.findByEmail(username)
 				.orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado con email: " + username));
@@ -38,30 +39,36 @@ public class OfertaServiceImpl implements OfertaService {
 		ofertaRepository.save(oferta);
 	}
 
-	/*
-	 * Método para comprobar si un usuario pued
-	 * */
+	/**
+	 * Método para comprobar si un usuario ha creado la oferta que se le pasa.
+	 * @param usuarioId
+	 * @param oferta
+	 * @return
+	 */
 	boolean puedeCrearOferta(Long usuarioId, Oferta oferta) {
 		// TODO Auto-generated method stub
 		return oferta.getUsuarioCreador().getId().equals(usuarioId);
 	}
 
+	/**
+	 * Método para listar todas las ofertas
+	 */
 	@Override
 	public Page<Oferta> listarTodasLasOfertas(Pageable pageable) {
 		return ofertaRepository.findAll(pageable);
 	}
 
+	/**
+	 * Método para obtener una oferta por ID
+	 */
 	@Override
 	public Oferta obtenerOfertaPorId(Long id) {
 		return ofertaRepository.findById(id).orElseThrow(() -> new OfertaNotFoundException("Oferta no encontrada"));
 	}
 
 	/*
-	 * public Oferta actualizarOferta(Long id, @Valid Oferta detalleOferta, String
-	 * username) { //TODO Actualizar el método para que compruebe que se tienen
-	 * permisos para actualizar la oferta.
+	 * Método que actualiza una oferta comprobando que el usuario ha creado esa oferta
 	 * 
-	 * }
 	 */
 
 	@Override
@@ -83,6 +90,10 @@ public class OfertaServiceImpl implements OfertaService {
 		return ofertaRepository.save(ofertaNueva);
 	}
 
+	
+	/**
+	 * Método que actualiza una oferta si se trata de un administrador
+	 */
 	@Override
 	public Oferta actualizarOfertaAdmin(Long id, Oferta oferta) {
 
@@ -95,6 +106,9 @@ public class OfertaServiceImpl implements OfertaService {
 		return ofertaRepository.save(ofertaNueva);
 	}
 
+	/**
+	 * Método que elimina una oferta si se es administrador
+	 */
 	@Override
 	public void eliminarOfertaAdmin(Long id) {
 		ofertaRepository.deleteById(id);

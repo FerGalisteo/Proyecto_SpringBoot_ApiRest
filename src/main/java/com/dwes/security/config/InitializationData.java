@@ -23,42 +23,34 @@ public class InitializationData implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
     	
-    
-    	
-    	try {
-    		// Usuario 1 - Rol USER
-            Usuario usuario1 = new Usuario();
+    	if(usuarioRepository.findByEmail("alice.johnson@example.com") == null) {
+    		Usuario usuario1 = new Usuario();
             usuario1.setFirstName("Alice");
             usuario1.setLastName("Johnson");
             usuario1.setEmail("alice.johnson@example.com");
             usuario1.setPassword(passwordEncoder.encode("password123"));
             usuario1.getRoles().add(Role.ROLE_USER);
             usuarioRepository.save(usuario1);
-
-            // Usuario 2 - Rol ADMIN
-            Usuario usuario2 = new Usuario();
+    	}
+    	if(usuarioRepository.findByEmail("bob.smith@example.com") == null) {
+    		Usuario usuario2 = new Usuario();
             usuario2.setFirstName("Bob");
             usuario2.setLastName("Smith");
             usuario2.setEmail("bob.smith@example.com");
             usuario2.setPassword(passwordEncoder.encode("password456"));
             usuario2.getRoles().add(Role.ROLE_ADMIN);
             usuarioRepository.save(usuario2);
-
-            // Usuario 3 - Rol USER
-            Usuario usuario3 = new Usuario();
+    	}
+    	if(usuarioRepository.findByEmail("carol.davis@example.com") == null) {
+    		Usuario usuario3 = new Usuario();
             usuario3.setFirstName("Carol");
             usuario3.setLastName("Davis");
             usuario3.setEmail("carol.davis@example.com");
             usuario3.setPassword(passwordEncoder.encode("password789"));
             usuario3.getRoles().add(Role.ROLE_USER);
             usuarioRepository.save(usuario3);
-            
-            
-            
-            
-    	}catch(Exception e) {
-    		
     	}
+    	
         
     }
 }
