@@ -29,6 +29,8 @@ import com.dwes.security.entities.Role;
 import com.dwes.security.entities.Usuario;
 import com.dwes.security.service.OfertaService;
 
+import jakarta.validation.Valid;
+
 /**
  * - Usa la Entidad directamente si tu aplicación es sencilla, deseas mantener
  * el código al mínimo, y la API refleja directamente tu modelo de dominio.
@@ -43,7 +45,17 @@ public class OfertaController {
 	@Autowired
 	private OfertaService ofertaService;
 
-	// Endpoint para obtener un listado de oferta
+	/**
+	 * 
+	 *Este endpoint permite listar todas las ofertas.
+	 *Además incluye filtros para poder listar las ofertas según el usuario que las ha creado o su precio máximo.
+	 *
+	 * @param page
+	 * @param size
+	 * @param usuario
+	 * @param precioMax
+	 * @return
+	 */
 	@GetMapping
 	@PreAuthorize("hasRole('ROLE_USER') || hasRole('ROLE_ADMIN')")
 	public ResponseEntity<Page<Oferta>> listarTodasLasOfertas(
@@ -71,27 +83,49 @@ public class OfertaController {
 	}
 
 
-	// Leer una oferta por ID
+	/**
+	 * Este Endpoint recupera una oferta dado su id.
+	 * @param id
+	 * @return
+	 */
 	@GetMapping("/{id}")
 	@PreAuthorize("hasRole('ROLE_USER') || hasRole('ROLE_ADMIN')")
 	public Oferta getOfertaById(@PathVariable Long id) {
 		return ofertaService.obtenerOfertaPorId(id);
 	}
 
-	// ------POST-------Método para crear una oferta-----------
+	/**
+	 * 
+	 * Endpoint del método POST para crear una nueva Oferta.
+	 * El método creará la oferta incluyendo el usuario loggeado como usuario creador de la oferta.
+	 * 
+	 * @param oferta
+	 * @param usuario
+	 * @return
+	 */
 	@PostMapping
 	@PreAuthorize("hasRole('ROLE_USER')")
-	public ResponseEntity<Void> crearOferta(@RequestBody Oferta oferta, @AuthenticationPrincipal Usuario usuario) {
+	public ResponseEntity<Void> crearOferta(@RequestBody @Valid Oferta oferta, @AuthenticationPrincipal Usuario usuario) {
 		UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		String username = userDetails.getUsername();
 		ofertaService.guardarOferta(oferta, username);
 		return new ResponseEntity<>(HttpStatus.CREATED);
 	}
 
-	// Actualizar una Oferta
+	/**
+	 * 
+	 * Endpoint para actualizar una oferta. Se comprueba si el usuario es administrador o un usuario normal.
+	 * En el ofertaService.actualizarOferta se comprueba si el usuario logeado ha creado esa oferta.
+	 * Solo permite a usuarios loggeados o administradores editar sus propias ofertas.
+	 * 
+	 * @param id
+	 * @param oferta
+	 * @param usuario
+	 * @return
+	 */
 	@PutMapping("/{id}")
 	@PreAuthorize("hasRole('ROLE_USER') || hasRole('ROLE_ADMIN')")
-	public Oferta updateOferta(@PathVariable Long id, @RequestBody Oferta oferta, @AuthenticationPrincipal Usuario usuario) {
+	public Oferta updateOferta(@PathVariable Long id, @RequestBody @Valid Oferta oferta, @AuthenticationPrincipal Usuario usuario) {
 		UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		String username = userDetails.getUsername();
 
@@ -105,8 +139,10 @@ public class OfertaController {
 
 	}
 
-	/* 
-	 * @DeleteMapping("/{id}") -TODO COMENTAR
+	/**
+	 * Endpoint para eliminar una oferta. El método al igual que el de actualizar comprueba la identidad del usuario que realiza la petición.
+	 * @param id
+	 * @param usuario
 	 */
 
 	// Eliminar una oferta siendo usuario registrado
@@ -126,47 +162,4 @@ public class OfertaController {
 
 	}
 	
-	
-	
-	/*
-	 *--------Filtros pero no son necesarios estos dado que utilizamos los que tenemos en el propio listar integrados. 
-	*/
-	
-	/**
-	 * Listar Ofertas por Usuario
-	 *
-	 */
-	
-	@GetMapping("/usuario/{username}")
-	@PreAuthorize("hasRole('ROLE_USER') || hasRole('ROLE_ADMIN')")
-	public ResponseEntity<Page<Oferta>> listarOfertasPorUsuario(
-	        @PathVariable String username,
-	        @RequestParam(defaultValue = "0") int page,
-	        @RequestParam(defaultValue = "10") int size) {
-	    logger.info("OfertasController :: listarOfertasPorUsuario");
-	    Pageable pageable = PageRequest.of(page, size);
-	    Page<Oferta> ofertas = ofertaService.listarOfertaPorUsuario(username, pageable);
-	    return new ResponseEntity<>(ofertas, HttpStatus.OK);
-	}
-
-
-	/**
-	 * FILTRAR OFERTAS POR PRECIO MAXIMO
-	 * @param precioMax
-	 * @param page
-	 * @param size
-	 * @return
-	 */
-	@GetMapping("/filtrar")
-	@PreAuthorize("hasRole('ROLE_USER') || hasRole('ROLE_ADMIN')")
-	public ResponseEntity<Page<Oferta>> filtrarOfertasPorPrecio(
-	        @RequestParam(required = false) Double precioMax,
-	        @RequestParam(defaultValue = "0") int page,
-	        @RequestParam(defaultValue = "10") int size) {
-	    logger.info("OfertasController :: filtrarOfertasPorPrecio");
-	    Pageable pageable = PageRequest.of(page, size);
-	    Page<Oferta> ofertas = ofertaService.listarOfertasPorPrecioMaximo(precioMax, pageable);
-	    return new ResponseEntity<>(ofertas, HttpStatus.OK);
-	}
-
 }

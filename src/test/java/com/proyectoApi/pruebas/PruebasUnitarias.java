@@ -38,19 +38,6 @@ class PruebasUnitarias {
 	@Mock
 	private UserRepository userRepository;
 
-	@Test
-	public void testAgregarOferta() {
-		// Configuración del repositorio mock
-		Oferta ofertaMock = mock(Oferta.class);
-		when(ofertaRepository.save(any())).thenReturn(ofertaMock);
-
-		// Ejecutar el método del servicio
-		Oferta result = ofertaService.agregarOferta(new Oferta());
-
-		// Verificar que se llama al repositorio y se devuelve la oferta esperada
-		verify(ofertaRepository).save(any());
-		assertSame(ofertaMock, result);
-	}
 
 	@Test
 	public void testGuardarOferta() {

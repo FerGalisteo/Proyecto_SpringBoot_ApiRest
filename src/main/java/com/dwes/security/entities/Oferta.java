@@ -24,9 +24,9 @@ public class Oferta {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	@NotBlank
-	@Size(max = 50)
+	@Size(max = 50, message = "Máximo de carácteres 50 en título")
 	private String titulo;
-	@Size(max = 200)
+	@Size(max = 200, message = "Máximo de carácteres 200 en descripción")
 	private String descripcion;
 	@NotBlank
 	private Double precio;
